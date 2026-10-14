@@ -59,4 +59,4 @@ GitHub: bukhariwajid78-rgb
 Thank you for visiting this project!
 ## 📱 App Screenshot
 
-![To-Do List App](todo-app-home.png)
+![To-Do List App](mainimage.png)
