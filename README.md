@@ -1,62 +1,34 @@
-📝 To-Do List App
+# 📝 To-Do List App
 
-A modern and user-friendly Android To-Do List application built using Kotlin and XML in Android Studio.
+A modern Android To-Do List app built with Kotlin and XML, now using a **Room database** to save tasks.
 
-✨ Features
+📺 **Watch the video:** [Room Database in Android (Kotlin)](YOUR_VIDEO_LINK)
 
-Add new tasks
+## ✨ Features
+- Add, edit and delete tasks
+- Mark tasks as completed (with strike-through)
+- Track total and completed tasks with a progress bar
+- Tasks saved in a **Room database**, still there after the app is closed
+- Screen updates automatically when data changes (Kotlin **Flow**)
 
-Edit existing tasks
+## 🛠️ Technologies Used
+- Kotlin + XML layouts
+- **Room** (Entity, DAO, Database) with KSP
+- Kotlin Coroutines and Flow
+- Android Studio, Git and GitHub
 
-Delete tasks
+## 🗂️ Versions
+- **Current:** Room database (this branch)
+- **Previous:** SharedPreferences, see the [`sharedpreferences-version`](../../tree/sharedpreferences-version) tag
 
-Mark tasks as completed
+## 🚀 Getting Started
+1. Clone or download this repository.
+2. Open the project in Android Studio.
+3. Let Gradle sync.
+4. Run the app on an emulator or Android device.
 
-Strike-through completed tasks
-
-Track total and completed tasks
-
-View task completion progress
-
-Save tasks using SharedPreferences
-
-Restore tasks when reopening the app
-
-Clean and modern user interface
-
-🛠️ Technologies Used
-
-Kotlin
-
-XML Layouts
-
-Android Studio
-
-SharedPreferences
-
-Git and GitHub
-
-🚀 Getting Started
-
-Clone or download this repository.
-
-Open the project in Android Studio.
-
-Allow Gradle to sync.
-
-Run the app on an Android emulator or Android device.
-
-🎯 Project Goal
-
-This project demonstrates Android application development, UI design, task management, and local data persistence.
-
-👨‍💻 Developer
-
-Syed Wajid Ali Bukhari
-
-GitHub: bukhariwajid78-rgb
-
-Thank you for visiting this project!
 ## 📱 App Screenshot
-
 ![To-Do List App](mainimage.png)
+
+## 👨‍💻 Developer
+**Syed Wajid Ali Bukhari** · YouTube: Bukhari Codes · GitHub: [bukhariwajid78-rgb](https://github.com/bukhariwajid78-rgb)
