@@ -1,182 +1,116 @@
 package com.choubapp.practice
 
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import org.json.JSONArray
-import org.json.JSONObject
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var etTask: EditText
     private lateinit var btnAdd: Button
     private lateinit var listViewTasks: ListView
+    private lateinit var txtTaskCount: TextView
+    private lateinit var taskProgress: ProgressBar
     private lateinit var adapter: TaskAdapter
+    private lateinit var dao: TaskDao
+
     private val tasks = ArrayList<Task>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val txtTaskCount = findViewById<TextView>(R.id.txtTaskCount)
-        val taskProgress = findViewById<ProgressBar>(R.id.taskProgress)
-        fun updateTaskCount() {
-            val total = tasks.size
-            val completed = tasks.count { it.isCompleted }
 
-            txtTaskCount.text = "$total tasks · $completed completed"
+        // 1. Get the DAO from the database
+        dao = AppDatabase.getInstance(this).taskDao()
 
-            val progress = if (total == 0) {
-                0
-            } else {
-                (completed * 100) / total
-            }
-
-            taskProgress.progress = progress
-        }
-
-        updateTaskCount()
-        val sharedPreferences = getSharedPreferences("TodoApp", MODE_PRIVATE)
-        fun saveTasks() {
-
-            val jsonArray = JSONArray()
-
-            for (task in tasks) {
-
-                val jsonObject = JSONObject()
-
-                jsonObject.put("title", task.title)
-                jsonObject.put("isCompleted", task.isCompleted)
-
-                jsonArray.put(jsonObject)
-            }
-
-            getSharedPreferences("TodoApp", MODE_PRIVATE)
-                .edit()
-                .putString("tasks", jsonArray.toString())
-                .apply()
-        }
-
-        fun loadTasks() {
-
-            val sharedPreferences =
-                getSharedPreferences("TodoApp", MODE_PRIVATE)
-
-            val savedTasks =
-                sharedPreferences.getString("tasks", null)
-
-            if (savedTasks != null) {
-
-                val jsonArray = JSONArray(savedTasks)
-
-                for (i in 0 until jsonArray.length()) {
-
-                    val jsonObject = jsonArray.getJSONObject(i)
-
-                    val title = jsonObject.getString("title")
-
-                    val isCompleted =
-                        jsonObject.getBoolean("isCompleted")
-
-                    tasks.add(
-                        Task(
-                            title,
-                            isCompleted
-                        )
-                    )
-                }
-            }
-        }
-        loadTasks()
+        // 2. Find the views
         etTask = findViewById(R.id.edttext)
         btnAdd = findViewById(R.id.btnAdd)
         listViewTasks = findViewById(R.id.listViewTasks)
-        val emptyTaskMessage = findViewById<TextView>(R.id.emptyTaskMessage)
-        listViewTasks.emptyView = emptyTaskMessage
+        txtTaskCount = findViewById(R.id.txtTaskCount)
+        taskProgress = findViewById(R.id.taskProgress)
+        listViewTasks.emptyView = findViewById(R.id.emptyTaskMessage)
+
+        // 3. Set up the adapter: each click saves to Room
         adapter = TaskAdapter(
             this,
             tasks,
-            { position ->
-
-                tasks.removeAt(position)
-
-                saveTasks()
-                updateTaskCount()
-
-                adapter.notifyDataSetChanged()
-                updateTaskCount()
-                Toast.makeText(
-                    this,
-                    "Task deleted",
-                    Toast.LENGTH_SHORT
-                ).show()
+            onToggle = { task, checked ->
+                lifecycleScope.launch {
+                    dao.update(task.copy(isCompleted = checked))
+                }
             },
-            {
-                saveTasks()
-                updateTaskCount()
+            onEdit = { task -> showEditDialog(task) },
+            onDelete = { task ->
+                lifecycleScope.launch {
+                    dao.delete(task)
+                }
+                Toast.makeText(this, "Task deleted", Toast.LENGTH_SHORT).show()
             }
         )
-
         listViewTasks.adapter = adapter
-        btnAdd.setOnClickListener {
 
+        // Tapping a row also opens the edit dialog
+        listViewTasks.setOnItemClickListener { _, _, position, _ ->
+            showEditDialog(tasks[position])
+        }
+
+        // 4. Add button: insert a new task
+        btnAdd.setOnClickListener {
             val taskTitle = etTask.text.toString().trim()
 
             if (taskTitle.isEmpty()) {
-
-                Toast.makeText(
-                    this,
-                    "Please enter a task",
-                    Toast.LENGTH_SHORT
-                ).show()
-
+                Toast.makeText(this, "Please enter a task", Toast.LENGTH_SHORT).show()
             } else {
-
-                val task = Task(taskTitle)
-
-                tasks.add(task)
-
-                saveTasks()
-
-                adapter.notifyDataSetChanged()
-
-                updateTaskCount()
+                lifecycleScope.launch {
+                    dao.insert(Task(title = taskTitle))
+                }
                 etTask.text.clear()
-                updateTaskCount()
-
             }
         }
-        listViewTasks.setOnItemClickListener { _, _, position, _ ->
 
-            val task = tasks[position]
-
-            val editText = EditText(this)
-            editText.setText(task.title)
-
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Edit Task")
-                .setView(editText)
-                .setPositiveButton("Update") { _, _ ->
-
-                    val newTitle = editText.text.toString().trim()
-
-                    if (newTitle.isNotEmpty()) {
-                        task.title = newTitle
-
-                        saveTasks()
-                        adapter.notifyDataSetChanged()
-                    }
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
+        // 5. Listen to the database: runs every time tasks change
+        lifecycleScope.launch {
+            dao.getAllTasks().collect { newTasks ->
+                tasks.clear()
+                tasks.addAll(newTasks)
+                adapter.notifyDataSetChanged()
+                updateTaskCount()
+            }
         }
     }
 
+    private fun updateTaskCount() {
+        val total = tasks.size
+        val completed = tasks.count { it.isCompleted }
+
+        txtTaskCount.text = "$total tasks · $completed completed"
+        taskProgress.progress = if (total == 0) 0 else (completed * 100) / total
+    }
+
+    private fun showEditDialog(task: Task) {
+        val editText = EditText(this)
+        editText.setText(task.title)
+
+        AlertDialog.Builder(this)
+            .setTitle("Edit Task")
+            .setView(editText)
+            .setPositiveButton("Update") { _, _ ->
+                val newTitle = editText.text.toString().trim()
+                if (newTitle.isNotEmpty()) {
+                    lifecycleScope.launch {
+                        dao.update(task.copy(title = newTitle))
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
 }

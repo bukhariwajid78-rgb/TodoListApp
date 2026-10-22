@@ -1,7 +1,12 @@
 package com.choubapp.practice
 
-data class Task(
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-    var title: String,
-    var isCompleted: Boolean = false
+@Entity(tableName = "tasks")
+data class Task(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val title: String,
+    val isCompleted: Boolean = false
 )

@@ -8,86 +8,47 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 
 class TaskAdapter(
     context: Context,
     private val tasks: ArrayList<Task>,
-    private val onDeleteClick: (Int) -> Unit,
-    private val onTaskChanged: () -> Unit
+    private val onToggle: (Task, Boolean) -> Unit,
+    private val onEdit: (Task) -> Unit,
+    private val onDelete: (Task) -> Unit
 ) : ArrayAdapter<Task>(context, 0, tasks) {
 
-    override fun getView(
-
-        position: Int,
-        convertView: View?,
-        parent: ViewGroup
-    ): View {
-
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = convertView ?: LayoutInflater.from(context)
             .inflate(R.layout.item_task, parent, false)
 
         val checkTask = view.findViewById<CheckBox>(R.id.checkTask)
-        checkTask.isFocusable = false
+        val btnEdit = view.findViewById<Button>(R.id.btnEdit)
         val btnDelete = view.findViewById<Button>(R.id.btnDelete)
 
         val task = tasks[position]
-        val btnEdit = view.findViewById<Button>(R.id.btnEdit)
-        checkTask.setOnCheckedChangeListener(null)
 
+        checkTask.isFocusable = false
+        checkTask.setOnCheckedChangeListener(null)
         checkTask.text = task.title
         checkTask.isChecked = task.isCompleted
-
-        if (task.isCompleted) {
-            checkTask.paintFlags =
-                checkTask.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-        } else {
-            checkTask.paintFlags =
-                checkTask.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-        }
+        setStrikeThrough(checkTask, task.isCompleted)
 
         checkTask.setOnCheckedChangeListener { _, isChecked ->
-
-            task.isCompleted = isChecked
-
-            if (isChecked) {
-                checkTask.paintFlags =
-                    checkTask.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-            } else {
-                checkTask.paintFlags =
-                    checkTask.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-            }
-
-            onTaskChanged()
+            setStrikeThrough(checkTask, isChecked)
+            onToggle(task, isChecked)
         }
 
-        btnDelete.setOnClickListener {
-            onDeleteClick(position)
-        }
-        btnEdit.setOnClickListener {
-            (context as AppCompatActivity).let { activity ->
-                val editText = EditText(activity)
-                editText.setText(task.title)
-
-                androidx.appcompat.app.AlertDialog.Builder(activity)
-                    .setTitle("Edit Task")
-                    .setView(editText)
-                    .setPositiveButton("Update") { _, _ ->
-                        val newTitle = editText.text.toString().trim()
-
-                        if (newTitle.isNotEmpty()) {
-                            task.title = newTitle
-                            onTaskChanged()
-                            notifyDataSetChanged()
-                        }
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
-            }
-        }
+        btnEdit.setOnClickListener { onEdit(task) }
+        btnDelete.setOnClickListener { onDelete(task) }
 
         return view
+    }
+
+    private fun setStrikeThrough(checkBox: CheckBox, on: Boolean) {
+        checkBox.paintFlags = if (on) {
+            checkBox.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+        } else {
+            checkBox.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+        }
     }
 }
