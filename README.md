@@ -2,7 +2,7 @@
 
 A modern Android To-Do List app built with Kotlin and XML, now using a **Room database** to save tasks.
 
-📺 **Watch the video:** [Room Database in Android (Kotlin)](YOUR_VIDEO_LINK)
+📺 **Watch the video:** Room Database in Android (Kotlin) | Upgrading My To-Do App from SharedPreferences  https://youtu.be/Y7-qb96gyVU
 
 ## ✨ Features
 - Add, edit and delete tasks
