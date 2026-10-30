@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.ksp)
+
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -39,14 +40,14 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
 
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
+
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
 
 }

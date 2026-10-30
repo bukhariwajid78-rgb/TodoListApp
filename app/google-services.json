@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "919309536302",
+    "project_id": "todolistapp-63547",
+    "storage_bucket": "todolistapp-63547.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919309536302:android:5641d753d3112a920f63bf",
+        "android_client_info": {
+          "package_name": "com.choubapp.practice"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPg29Yl0UK7YDbUNSURor-TZR680DPJkU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

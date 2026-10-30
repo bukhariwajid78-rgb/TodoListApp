@@ -1,12 +1,14 @@
 package com.choubapp.practice
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.PropertyName
 
-@Entity(tableName = "tasks")
 data class Task(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val title: String,
-    val isCompleted: Boolean = false
+    @DocumentId
+    val id: String = "",
+    val title: String = "",
+    @get:PropertyName("isCompleted")
+    @set:PropertyName("isCompleted")
+    var isCompleted: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
 )
